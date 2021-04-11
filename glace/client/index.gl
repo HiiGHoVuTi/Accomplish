@@ -1,0 +1,18 @@
+
+rust! \
+
+#![feature(proc_macro_hygiene)]
+use render::{rsx, Render, component};
+use std::fs;
+
+\;
+
+pub_index := None => String: {
+    page := rsx!\{
+        <html>
+            <h1> { "Hello World !" } </h1>
+            <script> { fs::read_to_string("./public/index.js").unwrap() } </script>
+        </html>
+    }\;
+    ret page.render();
+};

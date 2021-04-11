@@ -1,0 +1,48 @@
+
+__IMPORT_OBJECTS;
+
+rust!\
+extern crate csv;
+use csv::StringRecord;
+use std::fs;
+
+use rocket::request::Form;
+use rocket_contrib::json::Json;
+
+
+#[derive(Serialize, Deserialize)]
+pub struct Activity {
+    pub id: u128, pub user_id: u128, pub r#type: String, pub start_time: String, pub duration: String, pub satisfaction: String
+}
+\;
+
+
+pub_get := String: user_id, { Bool: get_all? } => Vec{StringRecord}: {
+    Mut: out = vec!\[]\;
+
+    Mut: handle = csv::Reader::from_path("./activity.csv").unwrap();
+    for result in handle.records() {
+        record := result.expect("a csv record");
+        if record[1] == user_id || !get_all.is_none() {
+            out.push(record);
+        };
+    };
+    return out;
+};
+
+pub_add := Json{Activity}: entry => Void: {
+        Mut: handle = csv::Writer::from_writer(fs::OpenOptions::new()
+            .append(true)
+            .open("activity.csv")
+            .expect("a file")
+        );
+        handle.write_record(Ref(vec!\[
+            entry.id.to_string(),
+            entry.user_id.to_string(), 
+            rust!\entry.r#type.to_string()\, 
+            entry.start_time.to_string(),
+            entry.duration.to_string(), 
+            entry.satisfaction.to_string()
+        ]\)).expect("an entry");
+        handle.flush().expect("a write to the db");
+};
