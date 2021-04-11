@@ -1,0 +1,3 @@
+```bs
+cargo run
+```
